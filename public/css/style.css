@@ -1063,8 +1063,10 @@ footer{
     background:rgba(0,0,0,.45);
     display:none;
     justify-content:center;
-    align-items:center;
+    align-items:flex-start;
     z-index:9999;
+    overflow-y:auto;
+    padding:40px 16px;
 }
 
 .modal-overlay.active{
@@ -1074,6 +1076,8 @@ footer{
 .modal-card{
     width:750px;
     max-width:95%;
+    max-height:calc(100vh - 80px);
+    overflow-y:auto;
     background:#fff;
     border-radius:24px;
     padding:40px;
@@ -1303,3 +1307,107 @@ footer{
     background: #aa0f21;
 }
 
+
+/* ==========================================
+   REQUEST SUCCESS SCREEN
+========================================== */
+
+.request-success-wrapper{
+    min-height:70vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+
+#screen-missing-success .card{
+    width:100%;
+    max-width:900px;
+    background:#fff;
+    border-radius:24px;
+    padding:60px;
+    text-align:center;
+    box-shadow:0 12px 35px rgba(0,0,0,.08);
+}
+
+/* Success Icon */
+#screen-missing-success .success-icon{
+    width:80px;
+    height:80px;
+    margin:0 auto 25px;
+    border-radius:50%;
+    background:#EEF9F0;
+    border:2px solid #B7E3C1;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:#22C55E;
+    font-size:42px;
+    font-weight:700;
+}
+
+/* Heading */
+#screen-missing-success .success-title{
+    font-size:48px;
+    font-weight:700;
+    color:#22C55E;
+    margin-bottom:20px;
+    line-height:1.2;
+}
+
+/* Description */
+#screen-missing-success .success-subtitle{
+    max-width:700px;
+    margin:0 auto 35px;
+    font-size:20px;
+    line-height:1.8;
+    color:#64748B;
+}
+
+/* Button */
+.request-success-btn{
+    width:100%;
+    max-width:720px;
+    height:60px;
+
+    border:none;
+    border-radius:10px;
+
+    background:#CF142B;
+    color:#fff;
+
+    font-size:18px;
+    font-weight:600;
+    cursor:pointer;
+
+    transition:all .3s ease;
+}
+
+.request-success-btn:hover{
+    background:#A61022;
+    transform:translateY(-2px);
+}
+
+/* Mobile */
+@media(max-width:768px){
+
+    #screen-missing-success .card{
+        padding:40px 25px;
+    }
+
+    #screen-missing-success .success-title{
+        font-size:34px;
+    }
+
+    #screen-missing-success .success-subtitle{
+        font-size:16px;
+        line-height:1.6;
+    }
+
+    .request-success-btn{
+        height:54px;
+        font-size:16px;
+    }
+}

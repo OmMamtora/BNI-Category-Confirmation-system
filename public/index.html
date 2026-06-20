@@ -156,7 +156,7 @@
 
                 <label class="checkbox-group">
                     <input type="checkbox" id="form-declaration">
-                    <span class="checkbox-label">I confirm that the category details are correct.</span>
+                    <span class="checkbox-label">I confirm that the category and scope mentioned above correctly represent my business for BNI chapter reference, and can be shared with the chapter.</span>
                 </label>
                 <p id="err-declaration" class="field-error"></p>
 
@@ -248,13 +248,27 @@
     </section>
 
     <!-- MISSING NAME SUCCESS -->
-    <section id="screen-missing-success" class="screen">
+    <!-- <section id="screen-missing-success" class="screen">
         <div class="card text-center">
             <div class="success-icon">📬</div>
             <h2 class="success-title">Request Sent!</h2>
             <p class="success-subtitle">The admin has been notified. Your name will be added shortly.</p>
             <button id="btn-missing-done" class="btn btn-primary">Back to Member Selection</button>
         </div>
+    </section> -->
+
+
+    <section id="screen-missing-success" class="screen">
+            <div class="card text-center">
+                <div class="success-icon"> ✓ </div>
+                <h1 class="success-title"> Request Sent </h1>
+                <p class="success-subtitle">
+                    Your request to add your name to the list has been sent to the
+                    Admin. The admin will review and add your name, after which
+                    you can complete the confirmation process.
+                </p>
+                <button id="btn-missing-done" class="request-success-btn"> Go Back to Member List</button>
+            </div>
     </section>
 
     <!-- ADMIN LOGIN -->

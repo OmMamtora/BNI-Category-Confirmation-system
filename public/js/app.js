@@ -198,7 +198,7 @@ async function submitCategoryForm() {
 
     specificAsk: document.getElementById('form-specific-ask').value,
 
-    declarationAccepted: true
+    declarationAccepted: document.getElementById('form-declaration').checked === true
 
   };
 
@@ -235,7 +235,6 @@ async function submitMissingRequest() {
     message: document.getElementById('req-message').value
 
   });
-  console.log("Saving to Firebase...");
 
 }
 
@@ -268,6 +267,9 @@ async function loadDashboardStats() {
 async function loadConfirmedSubmissions(searchText = '') {
 
   const submissions = await getSubmissions();
+
+  // cache full objects so the edit modal can read them by id without a re-fetch
+  window._submissionsCache = submissions;
 
   const q = searchText.toLowerCase();
 
@@ -303,8 +305,8 @@ async function loadConfirmedSubmissions(searchText = '') {
           <td class="mc">${escHtml(item.includes)}</td>
           <td class="mc">${escHtml(item.excludes)}</td>
           <td style="width:140px;text-align:center;white-space:nowrap;">
-            <button class="btn-action btn-primary" data-id="${item.id}" data-action="edit-submission"> Edit </button>
-            <button class="btn-action btn-danger" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission"> Delete</button>
+            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="edit-submission"> Edit </button>
+            <button type="button" class="btn-action btn-danger" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission"> Delete</button>
           </td>
         </tr>
       `).join('');
@@ -433,9 +435,9 @@ async function loadMissingRequests(searchText = '') {
 
             <td class="action-buttons">
                 ${ r.status !== 'approved'
-                    ? `<button class="btn-action btn-success" data-id="${r.id}" data-action="approve-request"> Approve </button>` : ''
+                    ? `<button type="button" class="btn-action btn-success" data-id="${r.id}" data-action="approve-request"> Approve </button>` : ''
                 }
-                <button class="btn-action btn-danger" data-id="${r.id}" data-action="delete-request"> Reject </button>
+                <button type="button" class="btn-action btn-danger" data-id="${r.id}" data-action="delete-request"> Reject </button>
             </td>
         </tr>
       `).join('');
@@ -450,39 +452,6 @@ async function loadMissingRequests(searchText = '') {
 /* ==========================================
    EXPORT CSV
 ========================================== */
-
-// async function exportCSV() {
-
-//   const submissions = await getSubmissions();
-
-//   let csv = 'Name,Business,Category,Includes,Excludes,Specific Ask\n';
-
-//   submissions.forEach(item => {
-
-//     const row = [
-//       item.memberName,
-//       item.businessName,
-//       item.category,
-//       item.includes,
-//       item.excludes,
-//       item.specificAsk || ''
-//     ].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
-
-//     csv += row + '\n';
-
-//   });
-
-//   const blob = new Blob([csv], { type: 'text/csv' });
-
-//   const link = document.createElement('a');
-
-//   link.href = URL.createObjectURL(blob);
-
-//   link.download = 'submissions.csv';
-
-//   link.click();
-
-// }
 
 async function exportCSV() {
 
@@ -843,7 +812,22 @@ document
     } catch (error) {
 
       console.error(error);
-      document.getElementById('form-submit-error').textContent = 'Unable to save. Please try again.';
+
+      // Show the REAL reason (e.g. "already submitted by someone else")
+      // instead of a generic message, so the member knows what happened.
+      document.getElementById('form-submit-error').textContent =
+        error.message || 'Unable to save. Please try again.';
+
+      // If the member was taken by someone else in the meantime (the
+      // transaction-guard race-condition case), refresh the roster and
+      // bounce them back to selection so they can't retry on a dead name.
+      if (error.message && error.message.toLowerCase().includes('already submitted')) {
+        await loadMembers();
+        selectedMember = null;
+        showScreen('selection');
+        const selErr = document.getElementById('selection-error');
+        if (selErr) selErr.textContent = error.message;
+      }
 
     } finally {
 
@@ -968,22 +952,27 @@ document
     const action = btn.dataset.action;
     const id = btn.dataset.id;
 
-     console.log('Button clicked');
-    console.log('Action:', action);
-    console.log('ID:', id);
+    if (!id) {
+      console.error('Action button is missing data-id — cannot perform action:', action);
+      alert('Something went wrong (missing record id). Please refresh the page and try again.');
+      return;
+    }
 
     if (action === 'delete-submission') {
 
       const memberId = btn.dataset.memberId || null;
       if (!confirm('Delete this submission? This will unlock the member\'s name.')) return;
 
+      btn.disabled = true;
+
       try {
         await deleteSubmissionRecord(id, memberId);
         await loadDashboardStats();
         await refreshActiveTab(document.getElementById('dash-search')?.value || '');
       } catch (error) {
-        console.error(error);
-        alert('Failed to delete submission.');
+        console.error('Delete submission failed:', error);
+        alert('Failed to delete submission: ' + (error.message || error));
+        btn.disabled = false;
       }
 
     } else if (action === 'delete-member') {
@@ -991,86 +980,182 @@ document
       const name = btn.dataset.name;
       if (!confirm(`Remove ${name} from the roster?`)) return;
 
+      btn.disabled = true;
+
       try {
         await deleteMember(id);
         await loadDashboardStats();
         await refreshActiveTab(document.getElementById('dash-search')?.value || '');
       } catch (error) {
-        console.error(error);
-        alert('Failed to remove member.');
+        console.error('Delete member failed:', error);
+        alert('Failed to remove member: ' + (error.message || error));
+        btn.disabled = false;
       }
 
     } else if (action === 'approve-request') {
 
-    //   const request = (window._requestsCache || []).find(r => r.id === id);
-    //   if (!request) return;
-    const request = (window._requestsCache || []).find(r => r.id === id);
+      const request = (window._requestsCache || []).find(r => r.id === id);
 
-    console.log("Request Object:", request);
-
-    if (!request) {
-        console.log("Request not found");
+      if (!request) {
+        alert('Could not find that request. Please refresh the page and try again.');
         return;
-    }
-        try {
+      }
 
-            console.log("Calling approveMissingRequest...");
+      btn.disabled = true;
 
-            await approveMissingRequest(request);
+      try {
 
-            console.log("approveMissingRequest completed");
+        await approveMissingRequest(request);
+        await loadDashboardStats();
+        await refreshActiveTab(document.getElementById('dash-search')?.value || '');
+        alert('Member added and request approved!');
 
-            await loadDashboardStats();
+      } catch (error) {
 
-            console.log("Dashboard stats loaded");
+        console.error('Approve request failed:', error);
+        alert('Failed to approve request: ' + (error.message || error));
+        btn.disabled = false;
 
-            await refreshActiveTab(
-                document.getElementById('dash-search')?.value || ''
-            );
-
-            console.log("Tab refreshed");
-
-            alert('Member added and request approved!');
-
-        } catch (error) {
-
-            console.error("Approve Error:", error);
-            console.error("Error Message:", error.message);
-            console.error("Error Stack:", error.stack);
-
-            alert(error.message);
-
-        }
+      }
 
     } else if (action === 'delete-request') {
 
       if (!confirm('Delete this request?')) return;
+
+      btn.disabled = true;
 
       try {
         await deleteRequest(id);
         await loadDashboardStats();
         await refreshActiveTab(document.getElementById('dash-search')?.value || '');
       } catch (error) {
-        console.error(error);
-        alert('Failed to delete request.');
+        console.error('Delete request failed:', error);
+        alert('Failed to delete request: ' + (error.message || error));
+        btn.disabled = false;
       }
 
-    } 
-    
-    else if (action === 'edit-submission') {
-        console.log('Edit clicked:', id);
-        const submission = (await getSubmissions()).find(s => s.id === id);
-        if (!submission) {
-            alert('Submission not found');
-            return;
-        }
-        console.log('Submission:', submission);
-        alert(`Editing ${submission.memberName}`);
+    } else if (action === 'edit-submission') {
+
+      const submission = (window._submissionsCache || []).find(s => s.id === id);
+
+      if (!submission) {
+        alert('Submission not found. Please refresh the page and try again.');
+        return;
+      }
+
+      openEditSubmissionModal(submission);
+
     }
 
   });
 
+/* ==========================================
+   EDIT SUBMISSION MODAL
+========================================== */
 
+const editModal       = document.getElementById('edit-submission-modal');
+const editForm        = document.getElementById('edit-submission-form');
+const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+const cancelEditBtn    = document.getElementById('cancel-edit-btn');
+
+let editingSubmissionId = null;
+
+function openEditSubmissionModal(submission) {
+
+  if (!editModal || !editForm) return;
+
+  editingSubmissionId = submission.id;
+
+  clearEditErrors();
+
+  document.getElementById('edit-member-name').value   = submission.memberName || '';
+  document.getElementById('edit-business-name').value = submission.businessName || '';
+  document.getElementById('edit-category').value      = submission.category || '';
+  document.getElementById('edit-includes').value      = submission.includes || '';
+  document.getElementById('edit-excludes').value      = submission.excludes || '';
+  document.getElementById('edit-specific-ask').value  = submission.specificAsk || '';
+
+  editModal.classList.add('active');
+
+}
+
+function closeEditSubmissionModal() {
+  editModal?.classList.remove('active');
+  editingSubmissionId = null;
+}
+
+function clearEditErrors() {
+  document.getElementById('edit-err-category')?.replaceChildren();
+  ['edit-err-category', 'edit-err-includes', 'edit-err-excludes', 'edit-submit-error'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+}
+
+closeEditModalBtn?.addEventListener('click', closeEditSubmissionModal);
+cancelEditBtn?.addEventListener('click', closeEditSubmissionModal);
+
+window.addEventListener('click', (e) => {
+  if (e.target === editModal) closeEditSubmissionModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && editModal?.classList.contains('active')) {
+    closeEditSubmissionModal();
+  }
+});
+
+editForm?.addEventListener('submit', async (e) => {
+
+  e.preventDefault();
+
+  if (!editingSubmissionId) return;
+
+  clearEditErrors();
+
+  const businessName = document.getElementById('edit-business-name').value.trim();
+  const category      = document.getElementById('edit-category').value.trim();
+  const includes       = document.getElementById('edit-includes').value.trim();
+  const excludes       = document.getElementById('edit-excludes').value.trim();
+  const specificAsk    = document.getElementById('edit-specific-ask').value.trim();
+
+  let valid = true;
+  if (!category)  { showFieldError('edit-err-category', 'Category is required.'); valid = false; }
+  if (!includes)  { showFieldError('edit-err-includes', 'This field is required.'); valid = false; }
+  if (!excludes)  { showFieldError('edit-err-excludes', 'This field is required.'); valid = false; }
+  if (!valid) return;
+
+  const btn = editForm.querySelector('button[type="submit"]');
+  setButtonLoading(btn, true, 'Saving…');
+
+  try {
+
+    await editSubmission(editingSubmissionId, {
+      businessName,
+      category,
+      includes,
+      excludes,
+      specificAsk
+    });
+
+    closeEditSubmissionModal();
+
+    await loadDashboardStats();
+    await refreshActiveTab(document.getElementById('dash-search')?.value || '');
+
+  } catch (error) {
+
+    console.error('Edit submission failed:', error);
+    document.getElementById('edit-submit-error').textContent =
+      'Failed to save changes: ' + (error.message || error);
+
+  } finally {
+
+    setButtonLoading(btn, false, 'Save Changes');
+
+  }
+
+});
 
 /* ==========================================
    RECEIPT RENDERING
@@ -1081,24 +1166,7 @@ function renderReceipt(sub) {
   const el = document.getElementById('receipt-body');
   if (!el) return;
 
-  const date = sub.submittedAt
-    ? new Date(sub.submittedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
-    : 'Just now';
-
-//   el.innerHTML = `
-//     <div class="receipt-header">
-//       <strong>BNI Lakshya — Category Confirmation</strong>
-//       <span>${date}</span>
-//     </div>
-//     <div class="receipt-row"><span class="rl">Member</span><span class="rv">${escHtml(sub.memberName)}</span></div>
-//     <div class="receipt-row"><span class="rl">Business</span><span class="rv">${escHtml(sub.businessName || '—')}</span></div>
-//     <div class="receipt-row"><span class="rl">Category</span><span class="rv">${escHtml(sub.category)}</span></div>
-//     <div class="receipt-row"><span class="rl">Includes</span><span class="rv pre">${escHtml(sub.includes)}</span></div>
-//     <div class="receipt-row"><span class="rl">Does Not Include</span><span class="rv pre">${escHtml(sub.excludes)}</span></div>
-//     ${sub.specificAsk ? `<div class="receipt-row"><span class="rl">Specific Ask</span><span class="rv pre">${escHtml(sub.specificAsk)}</span></div>` : ''}
-//   `;
-
-el.innerHTML = `
+  el.innerHTML = `
 <div class="submission-receipt">
 
     <div class="receipt-title">
@@ -1168,7 +1236,9 @@ const closeModalBtn    = document.getElementById('close-modal-btn');
 const cancelMemberBtn  = document.getElementById('cancel-member-btn');
 const addMemberForm    = document.getElementById('add-member-form');
 
-/* ── OPEN MODAL ───────────────────────────────────────────────────── */
+/* ==========================================
+    OPEN MODAL
+ ========================================== */
 
 if (addMemberBtn) {
 
@@ -1183,7 +1253,9 @@ if (addMemberBtn) {
 
 }
 
-/* ── CLOSE MODAL ──────────────────────────────────────────────────── */
+/* ========================================== 
+    CLOSE MODAL
+========================================== */
 
 function closeMemberModal() {
 
@@ -1203,7 +1275,9 @@ if (cancelMemberBtn) {
 
 }
 
-/* ── CLOSE MODAL ON OUTSIDE CLICK ─────────────────────────────────── */
+/* ==========================================
+    CLOSE MODAL ON OUTSIDE CLICK 
+========================================== */
 
 window.addEventListener('click', (e) => {
 
@@ -1215,7 +1289,9 @@ window.addEventListener('click', (e) => {
 
 });
 
-/* ── CLOSE MODAL ON ESCAPE ────────────────────────────────────────── */
+/* ==========================================
+    CLOSE MODAL ON ESCAPE 
+========================================== */
 
 document.addEventListener('keydown', (e) => {
 
@@ -1225,7 +1301,9 @@ document.addEventListener('keydown', (e) => {
 
 });
 
-/* ── CLEAR MODAL ERRORS ───────────────────────────────────────────── */
+/* ==========================================
+    CLEAR MODAL ERRORS
+========================================== */
 
 function clearModalErrors() {
 
@@ -1237,7 +1315,9 @@ function clearModalErrors() {
 
 }
 
-/* ── SAVE MEMBER TO FIREBASE ──────────────────────────────────────── */
+/* ========================================== 
+    SAVE MEMBER TO FIREBASE 
+========================================== */
 
 if (addMemberForm) {
 
