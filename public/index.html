@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNI Lakshya — Category Confirmation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-content">
+        <div class="logo-container">
+            <div class="logo-badge">BNI</div>
+            <div class="logo-text">
+                Lakshya
+                <span>Category Clarity</span>
+            </div>
+        </div>
+        <button id="admin-nav-btn" class="btn btn-outline" style="display:none">Dashboard</button>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main id="main-content">
+
+    <!-- LANDING -->
+    <section id="screen-landing" class="screen active">
+        <div class="card landing-card">
+            <div class="landing-hero">
+                <div class="landing-logo">BNI LAKSHYA</div>
+                <h1 class="landing-title">Category Confirmation Exercise</h1>
+                <p class="landing-subtitle">
+                    Define what you do, what you include, and what you do not include.
+                    This helps the chapter avoid category clashes and improve referral clarity.
+                </p>
+            </div>
+            <div class="instruction-grid">
+                <div class="instruction-card">
+                    <div class="instruction-num">1. Select</div>
+                    <div class="instruction-text">Find your name from the chapter roster.</div>
+                </div>
+                <div class="instruction-card">
+                    <div class="instruction-num">2. Define</div>
+                    <div class="instruction-text">Explain your category inclusions and exclusions.</div>
+                </div>
+                <div class="instruction-card">
+                    <div class="instruction-num">3. Secure</div>
+                    <div class="instruction-text">Submit and lock your category confirmation.</div>
+                </div>
+            </div>
+            <button id="start-btn" class="btn btn-primary btn-block btn-large">Start Category Confirmation</button>
+        </div>
+    </section>
+
+    <!-- MEMBER SELECTION -->
+    <section id="screen-selection" class="screen">
+        <div class="card">
+            <div class="steps-container">
+                <div class="step-node active">1</div>
+                <div class="step-line"></div>
+                <div class="step-node">2</div>
+                <div class="step-line"></div>
+                <div class="step-node">3</div>
+            </div>
+
+            <div class="card-header">
+                <h2 class="card-title">Select Your Name</h2>
+                <p class="card-subtitle">Search and select your name from the chapter roster.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Member Name *</label>
+
+                <div class="search-dropdown">
+                    <button type="button" id="dropdown-toggle" class="dropdown-toggle">
+                        <span id="selected-member">Search your name…</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+
+                    <div id="dropdown-menu" class="dropdown-menu">
+                        <!-- <input type="text" id="member-search" class="dropdown-search" placeholder="Type to filter names…"> -->
+                        <div id="dropdown-list" class="dropdown-list"></div>
+                    </div>
+                </div>
+
+                <p class="form-helper">If you cannot find your name in this list, it means it is either already locked or missing.</p>
+                <p id="selection-error" class="field-error"></p>
+            </div>
+
+            <button id="continue-btn" class="btn btn-primary btn-block">Continue</button>
+
+            <div class="screen-footer">
+                <button id="back-home-btn" class="btn btn-outline">Back</button>
+                <a href="#" id="missing-name-link" class="footer-link">My name is not in the list</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATEGORY FORM -->
+    <section id="screen-form" class="screen">
+        <div class="card">
+            <div class="steps-container">
+                <div class="step-node completed">✓</div>
+                <div class="step-line active"></div>
+                <div class="step-node active">2</div>
+                <div class="step-line"></div>
+                <div class="step-node">3</div>
+            </div>
+
+            <div class="card-header">
+                <h2 class="card-title">Category Details</h2>
+                <p class="card-subtitle">Fill in your category information clearly and completely.</p>
+            </div>
+
+            <form id="category-form" novalidate>
+                <div class="form-group">
+                    <label class="form-label">Member Name</label>
+                    <input id="form-member-name" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Chapter Name</label>
+                    <input value="BNI Lakshya" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Business Name</label>
+                    <input id="form-business-name" class="form-control" placeholder="Your business / company name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category Allotted *</label>
+                    <input id="form-category" class="form-control" placeholder="e.g. Training Engineering, Real Estate">
+                    <p id="err-category" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">This Will Include *</label>
+                    <textarea id="form-includes" class="form-control" rows="4" placeholder="List specific products/services included in your category…"></textarea>
+                    <p id="err-includes" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">This Will Not Include *</label>
+                    <textarea id="form-excludes" class="form-control" rows="4" placeholder="List specific products/services excluded from your category…"></textarea>
+                    <p id="err-excludes" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Specific Ask <span class="optional-tag">(optional)</span></label>
+                    <textarea id="form-specific-ask" class="form-control" rows="3" placeholder="Describe your ideal referral, target client, or specific ask…"></textarea>
+                </div>
+
+                <label class="checkbox-group">
+                    <input type="checkbox" id="form-declaration">
+                    <span class="checkbox-label">I confirm that the category details are correct.</span>
+                </label>
+                <p id="err-declaration" class="field-error"></p>
+
+                <p id="form-submit-error" class="submit-error"></p>
+
+                <button type="submit" class="btn btn-primary btn-block">Submit Confirmation</button>
+            </form>
+
+            <div class="screen-footer" style="margin-top:1rem">
+                <button id="btn-form-back" class="btn btn-outline">Back</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SUCCESS -->
+    <section id="screen-success" class="screen">
+        <div class="card text-center">
+            <div class="success-icon">✓</div>
+
+             <h2>Submitted Successfully!</h2>
+
+            <p>
+                Thank you. Your category confirmation has been recorded.
+                Your name has been locked to prevent duplicate submissions.
+            </p>
+
+            <div id="receipt-body" class="receipt-container"></div>
+
+            <div class="success-actions">
+                <button id="btn-print" class="btn btn-primary">🖨 Print Receipt</button>
+                <button id="btn-back-home" class="btn btn-outline">Back to Home</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MISSING NAME REQUEST -->
+    <section id="screen-missing" class="screen">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Request Name Addition</h2>
+                <p class="card-subtitle">If your name is missing from the list, submit this form. The admin will review and update the list shortly.</p>
+            </div>
+
+            <form id="missing-name-form" novalidate>
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input id="req-fullname" type="text" class="form-control" placeholder="Enter your full name">
+                    <p id="req-err-name" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Business Name *</label>
+                    <input id="req-business" type="text" class="form-control" placeholder="Enter your company name">
+                    <p id="req-err-business" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mobile Number *</label>
+                    <input id="req-mobile" type="text" class="form-control" placeholder="Enter 10-digit mobile number">
+                    <p id="req-err-mobile" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email ID *</label>
+                    <input id="req-email" type="email" class="form-control" placeholder="Enter your email address">
+                    <p id="req-err-email" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Suggested Category *</label>
+                    <input id="req-category" type="text" class="form-control" placeholder="e.g. Training Engineering, Residential Real Estate">
+                    <p id="req-err-category" class="field-error"></p>
+                    <p class="form-helper">Category you wish to confirm.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message to Admin <span class="optional-tag">(optional)</span></label>
+                    <textarea id="req-message" class="form-control" rows="3" placeholder="Write a message or correction details if any"></textarea>
+                </div>
+
+                <p id="req-submit-error" class="submit-error"></p>
+
+                <div class="screen-footer">
+                    <button type="button" id="btn-missing-back" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- MISSING NAME SUCCESS -->
+    <section id="screen-missing-success" class="screen">
+        <div class="card text-center">
+            <div class="success-icon">📬</div>
+            <h2 class="success-title">Request Sent!</h2>
+            <p class="success-subtitle">The admin has been notified. Your name will be added shortly.</p>
+            <button id="btn-missing-done" class="btn btn-primary">Back to Member Selection</button>
+        </div>
+    </section>
+
+    <!-- ADMIN LOGIN -->
+    <section id="screen-admin-login" class="screen">
+        <div class="admin-login-wrapper">
+            <div class="card admin-login-card">
+                <div class="card-header text-center">
+                    <div class="admin-badge">🔐</div>
+                    <h2 class="card-title">Admin Login</h2>
+                    <p class="card-subtitle">Access the BNI Lakshya control panel.</p>
+                </div>
+
+                <form id="admin-login-form" novalidate>
+                    <div class="form-group">
+                        <label class="form-label">Admin Email</label>
+                        <input type="email" id="admin-email" class="form-control" placeholder="admin@bnilakshya.com" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="admin-password" class="form-control" placeholder="••••••••" autocomplete="current-password">
+                    </div>
+
+                    <p id="admin-login-error" class="submit-error"></p>
+
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+
+                <button id="btn-admin-cancel" class="btn btn-outline btn-block" style="margin-top:.75rem">Back to Home</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ADMIN DASHBOARD -->
+    <section id="screen-dashboard" class="screen">
+        <div class="dashboard-container">
+
+            <div class="dashboard-header">
+                <div>
+                    <h1 class="dashboard-title">BNI Lakshya Dashboard</h1>
+                    <p class="dashboard-mode">Firestore Connected</p>
+                </div>
+                <div class="dashboard-actions">
+                    <button id="add-member-btn" class="btn-add-member">+ Add Member</button>
+                    <button id="logout-btn" class="btn-logout">Logout</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stats-card red">
+                    <h2 id="total-members">0</h2>
+                    <p>Total Chapter Members</p>
+                </div>
+                <div class="stats-card green">
+                    <h2 id="confirmed-count">0</h2>
+                    <p>Confirmed Category</p>
+                </div>
+                <div class="stats-card yellow">
+                    <h2 id="pending-count">0</h2>
+                    <p>Pending Confirmation</p>
+                </div>
+                <div class="stats-card red">
+                    <h2 id="request-count">0</h2>
+                    <p>Pending Name Requests</p>
+                </div>
+            </div>
+
+            <div class="dashboard-tabs">
+                <button id="tab-confirmed" class="tab-btn active">Confirmed Submissions (0)</button>
+                <button id="tab-pending" class="tab-btn">Pending Members (0)</button>
+                <button id="tab-requests" class="tab-btn">Name Requests (0)</button>
+            </div>
+
+            <div class="dashboard-search">
+                <input type="text" id="dash-search" class="dashboard-search-input" placeholder="Search by name, business, category…">
+                <button id="btn-export" class="btn-export">Export CSV</button>
+            </div>
+
+            <div id="dash-loading" class="loading-state" style="display:none">
+                <div class="spinner"></div>
+                <p>Loading data…</p>
+            </div>
+
+            <div id="dash-table-wrapper" class="table-wrapper">
+                <table class="dashboard-table">
+                    <thead id="dash-thead">
+                        <tr>
+                            <th>MEMBER NAME</th>
+                            <th>BUSINESS NAME</th>
+                            <th>CATEGORY ALLOTTED</th>
+                            <th>INCLUDES</th>
+                            <th>EXCLUDES</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dash-tbody">
+                        <tr>
+                            <td colspan="6" class="empty-row">No category confirmations found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<!-- ADD MEMBER MODAL -->
+<div id="member-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Add Chapter Member</h2>
+            <button type="button" id="close-modal-btn" class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <hr class="modal-divider">
+
+        <form id="add-member-form" novalidate>
+            <div class="form-group">
+                <label class="form-label">Full Name <span class="required-star">*</span></label>
+                <input type="text" id="add-member-name" class="form-control" placeholder="Enter full name">
+                <p id="modal-err-name" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Business Name <span class="required-star">*</span></label>
+                <input type="text" id="member-business" class="form-control" placeholder="Company name">
+                <p id="modal-err-business" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mobile Number</label>
+                <input type="text" id="member-mobile" class="form-control" placeholder="10 digit number">
+                <p id="modal-err-mobile" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email ID</label>
+                <input type="email" id="member-email" class="form-control" placeholder="name@email.com">
+                <p id="modal-err-email" class="field-error"></p>
+            </div>
+
+            <p id="modal-submit-error" class="submit-error"></p>
+
+            <div class="modal-actions">
+                <button type="button" id="cancel-member-btn" class="btn-modal-cancel">Cancel</button>
+                <button type="submit" id="modal-submit-btn" class="btn-modal-submit">Add Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT SUBMISSION MODAL -->
+<div id="edit-submission-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Edit Category Confirmation</h2>
+            <button type="button" id="close-edit-modal-btn" class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <hr class="modal-divider">
+
+        <form id="edit-submission-form" novalidate>
+            <div class="form-group">
+                <label class="form-label">Member Name</label>
+                <input type="text" id="edit-member-name" class="form-control" readonly>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Business Name</label>
+                <input type="text" id="edit-business-name" class="form-control" placeholder="Business / company name">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category Allotted <span class="required-star">*</span></label>
+                <input type="text" id="edit-category" class="form-control" placeholder="e.g. Training Engineering, Real Estate">
+                <p id="edit-err-category" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">This Will Include <span class="required-star">*</span></label>
+                <textarea id="edit-includes" class="form-control" rows="3"></textarea>
+                <p id="edit-err-includes" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">This Will Not Include <span class="required-star">*</span></label>
+                <textarea id="edit-excludes" class="form-control" rows="3"></textarea>
+                <p id="edit-err-excludes" class="field-error"></p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Specific Ask <span class="optional-tag">(optional)</span></label>
+                <textarea id="edit-specific-ask" class="form-control" rows="2"></textarea>
+            </div>
+
+            <p id="edit-submit-error" class="submit-error"></p>
+
+            <div class="modal-footer">
+                <button type="button" id="cancel-edit-btn" class="btn-cancel">Cancel</button>
+                <button type="submit" id="edit-submit-btn" class="btn-save-member">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-left">© 2026 BNI Lakshya Chapter. All rights reserved.</div>
+        <div class="footer-right">
+            <a href="#" id="admin-footer-link">Admin Portal Login</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>

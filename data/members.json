@@ -1,0 +1,16 @@
+[
+  {
+    "memberId":"1",
+    "name":"Amit Kothari",
+    "businessName":"Labdox",
+    "email":"amit@test.com",
+    "isSubmitted":false
+  },
+  {
+    "memberId":"2",
+    "name":"Rahul Shah",
+    "businessName":"RS Consulting",
+    "email":"rahul@test.com",
+    "isSubmitted":false
+  }
+]

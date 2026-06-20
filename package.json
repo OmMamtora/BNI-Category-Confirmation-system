@@ -1,0 +1,19 @@
+{
+  "name": "category-banner",
+  "version": "1.0.0",
+  "description": "BNI Lakshya Category Confirmation System",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "firebase": "^11.10.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
