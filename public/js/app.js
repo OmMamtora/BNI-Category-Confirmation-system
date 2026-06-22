@@ -1,5 +1,6 @@
 // js/app.js
 import { login, logout } from './firebase-auth.js';
+import { ready as firebaseReady } from './firebase.js';
 import {
   getMembers,
   getPendingMembers,
@@ -186,17 +187,17 @@ async function submitCategoryForm() {
 
     memberName,
 
-    businessName: document.getElementById('form-business-name').value,
+    businessName: document.getElementById('form-business-name').value.trim(),
 
     chapter: 'BNI Lakshya',
 
-    category: document.getElementById('form-category').value,
+    category: document.getElementById('form-category').value.trim(),
 
-    includes: document.getElementById('form-includes').value,
+    includes: document.getElementById('form-includes').value.trim(),
 
-    excludes: document.getElementById('form-excludes').value,
+    excludes: document.getElementById('form-excludes').value.trim(),
 
-    specificAsk: document.getElementById('form-specific-ask').value,
+    specificAsk: document.getElementById('form-specific-ask').value.trim(),
 
     declarationAccepted: document.getElementById('form-declaration').checked === true
 
@@ -222,17 +223,17 @@ async function submitMissingRequest() {
 
   await saveRequest({
 
-    fullName: document.getElementById('req-fullname').value,
+    fullName: document.getElementById('req-fullname').value.trim(),
 
-    businessName: document.getElementById('req-business').value,
+    businessName: document.getElementById('req-business').value.trim(),
 
-    mobile: document.getElementById('req-mobile').value,
+    mobile: document.getElementById('req-mobile').value.trim(),
 
-    email: document.getElementById('req-email').value,
+    email: document.getElementById('req-email').value.trim(),
 
-    suggestedCategory: document.getElementById('req-category').value,
+    suggestedCategory: document.getElementById('req-category').value.trim(),
 
-    message: document.getElementById('req-message').value
+    message: document.getElementById('req-message').value.trim()
 
   });
 
@@ -408,7 +409,7 @@ async function loadMissingRequests(searchText = '') {
     </tr>`;
 
   tbody.innerHTML = filtered.length === 0
-    ? `<tr><td colspan="7" class="empty-row">No name requests found.</td></tr>`
+    ? `<tr><td colspan="8" class="empty-row">No name requests found.</td></tr>`
     : filtered.map((r, i) => `
         <tr>
             <td>${i + 1}</td>
@@ -1432,6 +1433,8 @@ function escHtml(str) {
 ========================================== */
 
 async function init() {
+
+  await firebaseReady;
 
   showScreen('landing');
 
