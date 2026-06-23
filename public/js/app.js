@@ -305,8 +305,9 @@ async function loadConfirmedSubmissions(searchText = '') {
           <td><span class="badge">${escHtml(item.category)}</span></td>
           <td class="mc">${escHtml(item.includes)}</td>
           <td class="mc">${escHtml(item.excludes)}</td>
-          <td style="text-align:center;">
-            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="view-submission"> View</button>
+          <td style="text-align:center; display:flex; gap:8px; justify-content:center;">
+            <button type="button" class="btn-action btn-success" data-id="${item.id}" data-action="edit-submission"> Edit</button>
+            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="view-submission"> View </button>
           </td>
         </tr>
       `).join('');
