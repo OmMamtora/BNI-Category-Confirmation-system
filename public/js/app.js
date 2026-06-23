@@ -305,9 +305,8 @@ async function loadConfirmedSubmissions(searchText = '') {
           <td><span class="badge">${escHtml(item.category)}</span></td>
           <td class="mc">${escHtml(item.includes)}</td>
           <td class="mc">${escHtml(item.excludes)}</td>
-          <td style="width:140px;text-align:center;white-space:nowrap;">
-            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="edit-submission"> Edit </button>
-            <button type="button" class="btn-action btn-danger" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission"> Delete</button>
+          <td style="text-align:center;">
+            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="view-submission"> View</button>
           </td>
         </tr>
       `).join('');
@@ -1019,7 +1018,15 @@ document
 
       }
 
-    } else if (action === 'delete-request') {
+    } else if(action === 'view-submission') {
+
+      const submission = window._submissionsCache.find(s => s.id === id);
+      sessionStorage.setItem('selectedSubmission',JSON.stringify(submission));
+      sessionStorage.setItem( 'returnTab', activeTab);
+      window.location.href = 'submission-view.html';
+    }
+    
+    else if (action === 'delete-request') {
 
       if (!confirm('Delete this request?')) return;
 
@@ -1434,11 +1441,11 @@ function escHtml(str) {
 
 async function init() {
 
-  await firebaseReady;
+    await firebaseReady;
 
-  showScreen('landing');
+    showScreen('landing');
 
-  await loadMembers();
+    await loadMembers();
 
   const adminNavBtn = document.getElementById('admin-nav-btn');
   if (adminNavBtn) adminNavBtn.style.display = isAdminLoggedIn() ? 'inline-flex' : 'none';
