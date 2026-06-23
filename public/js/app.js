@@ -38,7 +38,8 @@ const screens = {
   missing   : document.getElementById('screen-missing'),
   missingDone: document.getElementById('screen-missing-success'),
   adminLogin: document.getElementById('screen-admin-login'),
-  dashboard : document.getElementById('screen-dashboard')
+  dashboard : document.getElementById('screen-dashboard'),
+  submissionView:document.getElementById('screen-submission-view')
 };
 
 /* ==========================================
@@ -79,6 +80,24 @@ function isAdminLoggedIn() {
   return !!sessionStorage.getItem('bni_admin');
 }
 
+function openSubmissionView(submission) {
+
+    document.getElementById('view-memberName').value = submission.memberName || '';
+
+    document.getElementById('view-chapterName').value = submission.chapter || 'BNI Lakshya';
+
+    document.getElementById('view-businessName').value = submission.businessName || '';
+
+    document.getElementById('view-category').value = submission.category || '';
+
+    document.getElementById('view-includes').value = submission.includes || '';
+
+    document.getElementById('view-excludes').value = submission.excludes || '';
+
+    document.getElementById('view-specificAsk').value = submission.specificAsk || '-';
+
+    showScreen('submissionView');
+}
 /* ==========================================
    LOAD MEMBERS
 ========================================== */
@@ -739,6 +758,13 @@ document
   .getElementById('btn-export')
   ?.addEventListener('click', exportCSV);
 
+document
+  .getElementById('btn-back-dashboard')
+  ?.addEventListener('click', () => {
+
+      showScreen('dashboard');
+});
+
 /* ==========================================
    DROPDOWN OPEN / CLOSE
 ========================================== */
@@ -1024,7 +1050,7 @@ document
       const submission = window._submissionsCache.find(s => s.id === id);
       sessionStorage.setItem('selectedSubmission',JSON.stringify(submission));
       sessionStorage.setItem( 'returnTab', activeTab);
-      window.location.href = 'submission-view.html';
+      openSubmissionView(submission);
     }
     
     else if (action === 'delete-request') {
