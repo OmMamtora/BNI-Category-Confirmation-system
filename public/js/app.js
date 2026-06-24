@@ -1,6 +1,6 @@
 // js/app.js
 import { login, logout } from './firebase-auth.js';
-import { ready as firebaseReady } from './firebase.js';
+import { db, ready as firebaseReady } from './firebase.js';
 import {
   getMembers,
   getPendingMembers,
@@ -38,8 +38,7 @@ const screens = {
   missing   : document.getElementById('screen-missing'),
   missingDone: document.getElementById('screen-missing-success'),
   adminLogin: document.getElementById('screen-admin-login'),
-  dashboard : document.getElementById('screen-dashboard'),
-  submissionView:document.getElementById('screen-submission-view')
+  dashboard : document.getElementById('screen-dashboard')
 };
 
 /* ==========================================
@@ -80,24 +79,6 @@ function isAdminLoggedIn() {
   return !!sessionStorage.getItem('bni_admin');
 }
 
-function openSubmissionView(submission) {
-
-    document.getElementById('view-memberName').value = submission.memberName || '';
-
-    document.getElementById('view-chapterName').value = submission.chapter || 'BNI Lakshya';
-
-    document.getElementById('view-businessName').value = submission.businessName || '';
-
-    document.getElementById('view-category').value = submission.category || '';
-
-    document.getElementById('view-includes').value = submission.includes || '';
-
-    document.getElementById('view-excludes').value = submission.excludes || '';
-
-    document.getElementById('view-specificAsk').value = submission.specificAsk || '-';
-
-    showScreen('submissionView');
-}
 /* ==========================================
    LOAD MEMBERS
 ========================================== */
@@ -108,11 +89,7 @@ async function loadMembers() {
 
     members = await getMembers();
 
-    const availableMembers = members.filter(
-      member => !member.isSubmitted
-    );
-
-    renderMembers(availableMembers);
+    renderMembers(members);
 
   } catch (error) {
 
@@ -127,53 +104,65 @@ async function loadMembers() {
 ========================================== */
 
 function renderMembers(list) {
-
   if (!dropdownList) return;
-
   dropdownList.innerHTML = '';
 
   if (list.length === 0) {
-    dropdownList.innerHTML = '<div class="dropdown-empty">No pending members found</div>';
+    dropdownList.innerHTML = '<div class="dropdown-empty" style="padding: 16px; color: #6B7280; text-align: center;">No members found</div>';
     return;
   }
 
   list.forEach(member => {
-
     const div = document.createElement('div');
-
     div.className = 'dropdown-item';
 
-    div.innerHTML = `
-      <span class="dropdown-name">
-        ${escHtml(member.name)}
-      </span>
+    const badgeHtml = member.isSubmitted 
+      ? '<span class="badge-locked">LOCKED</span>' 
+      : '<span class="badge-active">ACTIVE</span>';
 
-      <span class="dropdown-business">
-        ${escHtml(member.businessName || '')}
-      </span>
+    div.innerHTML = `
+      <div class="item-info">
+          <span class="dropdown-name">${escHtml(member.name)}</span>
+          <span class="dropdown-business">${escHtml(member.businessName || '')}</span>
+      </div>
+      ${badgeHtml}
     `;
 
     div.addEventListener('click', () => {
-
       selectedMember = member;
-
-      selectedMemberEl.textContent = member.name;
+      selectedMemberEl.innerHTML = `<span style="color:#A0AEC0; margin-right: 8px;">🔍</span> ${escHtml(member.name)}`;
       selectedMemberEl.dataset.id = member.id;
-      selectedMemberEl.classList.add('chosen');
-
-      document
-        .getElementById('dropdown-menu')
-        .classList.remove('active');
-
+      
+      document.getElementById('dropdown-menu').classList.remove('active');
       const errEl = document.getElementById('selection-error');
       if (errEl) errEl.textContent = '';
 
+      const card = document.getElementById('selected-member-card');
+      card.style.display = 'block';
+      
+      document.getElementById('sel-name').textContent = member.name;
+      document.getElementById('sel-category').textContent = member.category || 'Not Assigned';
+      document.getElementById('sel-business').textContent = member.businessName || '-';
+      
+      const badge = document.getElementById('sel-badge');
+      const warning = document.getElementById('sel-locked-warning');
+      const action = document.getElementById('sel-action-area');
+      
+      if (member.isSubmitted) {
+          badge.textContent = 'SUBMITTED & LOCKED';
+          badge.className = 'status-badge locked';
+          warning.style.display = 'block';
+          action.style.display = 'none';
+      } else {
+          badge.textContent = 'AVAILABLE';
+          badge.className = 'status-badge available';
+          warning.style.display = 'none';
+          action.style.display = 'block';
+      }
     });
 
     dropdownList.appendChild(div);
-
   });
-
 }
 
 /* ==========================================
@@ -183,7 +172,6 @@ function renderMembers(list) {
 function searchMembers(queryText) {
 
   const filtered = members.filter(member =>
-    !member.isSubmitted &&
     member.name.toLowerCase().includes(queryText.toLowerCase())
   );
 
@@ -324,9 +312,9 @@ async function loadConfirmedSubmissions(searchText = '') {
           <td><span class="badge">${escHtml(item.category)}</span></td>
           <td class="mc">${escHtml(item.includes)}</td>
           <td class="mc">${escHtml(item.excludes)}</td>
-          <td style="text-align:center; display:flex; gap:8px; justify-content:center;">
-            <button type="button" class="btn-action btn-success" data-id="${item.id}" data-action="edit-submission"> Edit</button>
-            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="view-submission"> View </button>
+          <td style="width:140px;text-align:center;white-space:nowrap;">
+            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="edit-submission"> Edit </button>
+            <button type="button" class="btn-action btn-danger" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission"> Delete</button>
           </td>
         </tr>
       `).join('');
@@ -680,8 +668,41 @@ async function openDashboard() {
 ========================================== */
 
 document
+  .getElementById('logo-home-link')
+  ?.addEventListener('click', () => showScreen('landing'));
+
+document
+  .getElementById('admin-login-link')
+  ?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isAdminLoggedIn()) {
+      openDashboard();
+    } else {
+      showScreen('adminLogin');
+    }
+  });
+
+document
   .getElementById('start-btn')
   ?.addEventListener('click', () => showScreen('selection'));
+
+// document
+//   .getElementById('continue-btn')
+//   ?.addEventListener('click', () => {
+
+//     if (!selectedMember) {
+//       const errEl = document.getElementById('selection-error');
+//       if (errEl) errEl.textContent = 'Please select your name first.';
+//       return;
+//     }
+//     if (selectedMember.isSubmitted) return;
+
+//     document.getElementById('form-member-name').value = selectedMember.name;
+//     document.getElementById('form-business-name').value = selectedMember.businessName || '';
+
+//     showScreen('form');
+
+//   });
 
 document
   .getElementById('continue-btn')
@@ -693,12 +714,22 @@ document
       return;
     }
 
-    document.getElementById('form-member-name').value = selectedMember.name;
-    document.getElementById('form-business-name').value = selectedMember.businessName || '';
+    if (selectedMember.isSubmitted) return;
+
+    console.log("Selected Member:", selectedMember);
+
+    document.getElementById('form-member-name').value =
+      selectedMember.name || '';
+
+    document.getElementById('form-business-name').value =
+      selectedMember.businessName || '';
+
+    // FIX
+    document.getElementById('form-category').value =
+      selectedMember.profession || '';
 
     showScreen('form');
-
-  });
+});
 
 document
   .getElementById('back-home-btn')
@@ -758,13 +789,6 @@ document
   .getElementById('btn-export')
   ?.addEventListener('click', exportCSV);
 
-document
-  .getElementById('btn-back-dashboard')
-  ?.addEventListener('click', () => {
-
-      showScreen('dashboard');
-});
-
 /* ==========================================
    DROPDOWN OPEN / CLOSE
 ========================================== */
@@ -794,40 +818,172 @@ dropdownSearch?.addEventListener('input', () => {
    CATEGORY FORM SUBMIT
 ========================================== */
 
+// document
+//   .getElementById('category-form')
+//   ?.addEventListener('submit', async (e) => {
+
+//     console.log("FORM SUBMITTED");
+
+//     e.preventDefault();
+//     console.log("A");
+    
+//     clearFormErrors();
+//     console.log("B");
+
+//     const category    = document.getElementById('form-category').value.trim();
+//     console.log("C");
+//     const includes     = document.getElementById('form-includes').value.trim();
+//     console.log("D");
+//     const excludes     = document.getElementById('form-excludes').value.trim();
+//     console.log("E");
+//     const declaration  = document.getElementById('form-declaration').checked;
+//     console.log("F");
+
+//     let valid = true;
+//     console.log("G");
+//     if (!category)   { showFieldError('err-category', 'Category is required.'); valid = false; }
+//     if (!includes)    { showFieldError('err-includes', 'Please describe what is included.'); valid = false; }
+//     if (!excludes)    { showFieldError('err-excludes', 'Please describe what is not included.'); valid = false; }
+//     if (!declaration) { showFieldError('err-declaration', 'Please confirm the declaration.'); valid = false; }
+//     if (!valid) return;
+
+//     const btn = e.target.querySelector('button[type="submit"]');
+//     setButtonLoading(btn, true, 'Submitting…');
+
+//     try {
+
+//   console.log("1. Before submitCategoryForm");
+
+//   const submission = await submitCategoryForm();
+
+//   console.log("2. After submitCategoryForm", submission);
+
+//   renderReceipt(submission);
+
+//   console.log("3. After renderReceipt");
+
+//   showScreen('success');
+
+//   console.log("4. Success screen shown");
+
+//       e.target.reset();
+
+//       selectedMember = null;
+//       if (selectedMemberEl) {
+//         selectedMemberEl.textContent = 'Search your name…';
+//         selectedMemberEl.classList.remove('chosen');
+//         delete selectedMemberEl.dataset.id;
+//       }
+
+//       await loadMembers();
+
+//     } catch (error) {
+
+//       console.error(error);
+
+//       // Show the REAL reason (e.g. "already submitted by someone else")
+//       // instead of a generic message, so the member knows what happened.
+//       document.getElementById('form-submit-error').textContent =
+//         error.message || 'Unable to save. Please try again.';
+
+//       // If the member was taken by someone else in the meantime (the
+//       // transaction-guard race-condition case), refresh the roster and
+//       // bounce them back to selection so they can't retry on a dead name.
+//       if (error.message && error.message.toLowerCase().includes('already submitted')) {
+//         await loadMembers();
+//         selectedMember = null;
+//         showScreen('selection');
+//         const selErr = document.getElementById('selection-error');
+//         if (selErr) selErr.textContent = error.message;
+//       }
+//     } finally {
+
+//       setButtonLoading(btn, false, 'Submit Confirmation');
+
+//     }
+
+//   });
+
 document
   .getElementById('category-form')
   ?.addEventListener('submit', async (e) => {
 
     e.preventDefault();
 
-    clearFormErrors();
-
-    const category    = document.getElementById('form-category').value.trim();
-    const includes     = document.getElementById('form-includes').value.trim();
-    const excludes     = document.getElementById('form-excludes').value.trim();
-    const declaration  = document.getElementById('form-declaration').checked;
-
-    let valid = true;
-    if (!category)   { showFieldError('err-category', 'Category is required.'); valid = false; }
-    if (!includes)    { showFieldError('err-includes', 'Please describe what is included.'); valid = false; }
-    if (!excludes)    { showFieldError('err-excludes', 'Please describe what is not included.'); valid = false; }
-    if (!declaration) { showFieldError('err-declaration', 'Please confirm the declaration.'); valid = false; }
-    if (!valid) return;
-
-    const btn = e.target.querySelector('button[type="submit"]');
-    setButtonLoading(btn, true, 'Submitting…');
+    console.log("FORM SUBMITTED");
 
     try {
 
+      console.log("A");
+
+      clearFormErrors();
+
+      console.log("B");
+
+      const category = document.getElementById('form-category').value.trim();
+      const includes = document.getElementById('form-includes').value.trim();
+      const excludes = document.getElementById('form-excludes').value.trim();
+      const declaration = document.getElementById('form-declaration').checked;
+
+      console.log("Category:", category);
+console.log("Includes:", includes);
+console.log("Excludes:", excludes);
+console.log("Declaration:", declaration);
+
+      let valid = true;
+
+      if (!category) {
+        showFieldError('err-category', 'Category is required.');
+        valid = false;
+      }
+
+      if (!includes) {
+        showFieldError('err-includes', 'Please describe what is included.');
+        valid = false;
+      }
+
+      if (!excludes) {
+        showFieldError('err-excludes', 'Please describe what is not included.');
+        valid = false;
+      }
+
+      if (!declaration) {
+        showFieldError('err-declaration', 'Please confirm the declaration.');
+        valid = false;
+      }
+
+      if (!valid) {
+        console.log("FORM INVALID");
+        return;
+      }
+
+      console.log("D");
+
+      const btn = e.target.querySelector('button[type="submit"]');
+
+      console.log("BTN FOUND:", btn);
+
+      // TEMPORARILY COMMENT THIS
+      // setButtonLoading(btn, true, 'Submitting…');
+
+      console.log("E");
+
       const submission = await submitCategoryForm();
+
+      console.log("F - SUBMISSION SAVED", submission);
 
       renderReceipt(submission);
 
+      console.log("G - RECEIPT RENDERED");
+
       showScreen('success');
+
+      console.log("H - SUCCESS SCREEN SHOWN");
 
       e.target.reset();
 
       selectedMember = null;
+
       if (selectedMemberEl) {
         selectedMemberEl.textContent = 'Search your name…';
         selectedMemberEl.classList.remove('chosen');
@@ -838,31 +994,26 @@ document
 
     } catch (error) {
 
-      console.error(error);
+      console.error("SUBMIT ERROR:", error);
 
-      // Show the REAL reason (e.g. "already submitted by someone else")
-      // instead of a generic message, so the member knows what happened.
-      document.getElementById('form-submit-error').textContent =
-        error.message || 'Unable to save. Please try again.';
+      const errorBox = document.getElementById('form-submit-error');
 
-      // If the member was taken by someone else in the meantime (the
-      // transaction-guard race-condition case), refresh the roster and
-      // bounce them back to selection so they can't retry on a dead name.
-      if (error.message && error.message.toLowerCase().includes('already submitted')) {
-        await loadMembers();
-        selectedMember = null;
-        showScreen('selection');
-        const selErr = document.getElementById('selection-error');
-        if (selErr) selErr.textContent = error.message;
+      if (errorBox) {
+        errorBox.textContent =
+          error.message || 'Unable to save. Please try again.';
       }
 
     } finally {
 
-      setButtonLoading(btn, false, 'Submit Confirmation');
+      const btn = e.target.querySelector('button[type="submit"]');
+
+      if (btn) {
+        btn.disabled = false;
+      }
 
     }
 
-  });
+});
 
 /* ==========================================
    MISSING NAME FORM SUBMIT
@@ -921,13 +1072,13 @@ document
 
     e.preventDefault();
 
-    const email    = document.getElementById('admin-email').value.trim();
+    const email    = 'admin@gmail.com'; // Hardcoded for passcode-only login
     const password = document.getElementById('admin-password').value.trim();
     const errorEl  = document.getElementById('admin-login-error');
     const btn      = e.target.querySelector('button[type="submit"]');
 
     errorEl.textContent = '';
-    setButtonLoading(btn, true, 'Logging in…');
+    setButtonLoading(btn, true, 'Verifying…');
 
     try {
 
@@ -938,11 +1089,11 @@ document
     } catch (error) {
 
       console.error(error);
-      errorEl.textContent = 'Invalid email or password.';
+      errorEl.textContent = 'Invalid passcode.';
 
     } finally {
 
-      setButtonLoading(btn, false, 'Login');
+      setButtonLoading(btn, false, 'Verify & Open Dashboard');
 
     }
 
@@ -1045,15 +1196,7 @@ document
 
       }
 
-    } else if(action === 'view-submission') {
-
-      const submission = window._submissionsCache.find(s => s.id === id);
-      sessionStorage.setItem('selectedSubmission',JSON.stringify(submission));
-      sessionStorage.setItem( 'returnTab', activeTab);
-      openSubmissionView(submission);
-    }
-    
-    else if (action === 'delete-request') {
+    } else if (action === 'delete-request') {
 
       if (!confirm('Delete this request?')) return;
 
@@ -1466,17 +1609,45 @@ function escHtml(str) {
    INIT
 ========================================== */
 
+// async function init() {
+
+//   showScreen('landing');
+
+//   await loadMembers();
+
+//   const adminNavBtn = document.getElementById('admin-nav-btn');
+//   if (adminNavBtn) adminNavBtn.style.display = isAdminLoggedIn() ? 'inline-flex' : 'none';
+
+// }
+
 async function init() {
 
-    await firebaseReady;
+    try {
 
-    showScreen('landing');
+        await firebaseReady;
 
-    await loadMembers();
+        console.log("Firebase Ready");
+        console.log("DB:", db);
 
-  const adminNavBtn = document.getElementById('admin-nav-btn');
-  if (adminNavBtn) adminNavBtn.style.display = isAdminLoggedIn() ? 'inline-flex' : 'none';
+        showScreen('landing');
 
+        await loadMembers();
+
+        const adminNavBtn =
+            document.getElementById('admin-nav-btn');
+
+        if (adminNavBtn) {
+            adminNavBtn.style.display =
+                isAdminLoggedIn()
+                    ? 'inline-flex'
+                    : 'none';
+        }
+
+    } catch (error) {
+
+        console.error("Firebase Init Error:", error);
+
+    }
 }
 
 init();
