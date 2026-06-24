@@ -588,8 +588,7 @@ async function adminLogout() {
 
   sessionStorage.removeItem('bni_admin');
 
-  const adminLoginBtn =
-    document.getElementById('admin-login-link');
+  const adminLoginBtn = document.getElementById('admin-login-link');
 
   if(adminLoginBtn){
     adminLoginBtn.style.display = 'inline-flex';
@@ -1087,38 +1086,61 @@ if (!suggestedCategory) {
    ADMIN LOGIN FORM SUBMIT
 ========================================== */
 
+// document
+//   .getElementById('admin-login-form')
+//   ?.addEventListener('submit', async (e) => {
+
+//     e.preventDefault();
+
+//     const email    = 'admin@gmail.com'; // Hardcoded for passcode-only login
+//     const password = document.getElementById('admin-password').value.trim();
+//     const errorEl  = document.getElementById('admin-login-error');
+//     const btn      = e.target.querySelector('button[type="submit"]');
+
+//     errorEl.textContent = '';
+//     setButtonLoading(btn, true, 'Verifying…');
+
+//     try {
+
+//       await adminLogin(email, password);
+
+//       await openDashboard();
+
+//     } catch (error) {
+
+//       console.error(error);
+//       errorEl.textContent = 'Invalid passcode.';
+
+//     } finally {
+
+//       setButtonLoading(btn, false, 'Verify & Open Dashboard');
+
+//     }
+
+//   });
+
 document
-  .getElementById('admin-login-form')
-  ?.addEventListener('submit', async (e) => {
+.getElementById('admin-login-btn')
+?.addEventListener('click', async () => {
 
-    e.preventDefault();
-
-    const email    = 'admin@gmail.com'; // Hardcoded for passcode-only login
     const password = document.getElementById('admin-password').value.trim();
-    const errorEl  = document.getElementById('admin-login-error');
-    const btn      = e.target.querySelector('button[type="submit"]');
+    const errorEl = document.getElementById('admin-login-error');
 
-    errorEl.textContent = '';
-    setButtonLoading(btn, true, 'Verifying…');
-
+    if (errorEl) {
+        errorEl.textContent = '';
+    }
     try {
-
-      await adminLogin(email, password);
-
-      await openDashboard();
+        await adminLogin( 'admin@gmail.com', password );
+        await openDashboard();
 
     } catch (error) {
+        console.error(error);
 
-      console.error(error);
-      errorEl.textContent = 'Invalid passcode.';
-
-    } finally {
-
-      setButtonLoading(btn, false, 'Verify & Open Dashboard');
-
+        if (errorEl) {
+            errorEl.textContent = 'Invalid passcode.';
+        }
     }
-
-  });
+});
 
 /* ==========================================
    DASHBOARD TABS
