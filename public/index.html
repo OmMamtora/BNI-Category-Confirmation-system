@@ -208,28 +208,27 @@
 
     <!-- ADMIN LOGIN -->
     <section id="screen-admin-login" class="screen">
+
         <div class="admin-login-wrapper">
-            <div class="card admin-login-card">
-                <div class="card-header text-center">
-                    <h2 class="card-title">Chapter Admin Access</h2>
-                    <p class="card-subtitle">Restricted to BNI Lakshya Leadership Team</p>
-                </div>
+            <div class="admin-login-card">
+                <div style="font-size:24px;margin-bottom:10px;">🔐</div>
+                <h2 class="card-title"> Leadership Access </h2>
+                <p class="card-subtitle"> Restricted access for BNI Lakshya Leadership Team </p>
+                <label class="admin-label"> Enter Leadership Passcode </label>
 
-                <form id="admin-login-form" novalidate>
-                    <!-- Hidden email field mapped via JS or hardcoded -->
-                    <div class="form-group mt-2">
-                        <label class="form-label admin-label">Enter Leadership Passcode</label>
-                        <input type="password" id="admin-password" class="form-control" placeholder="Enter passcode" autocomplete="current-password">
-                    </div>
+                <input type="password" id="admin-passcode" class="form-control" placeholder="Enter passcode">
 
-                    <p id="admin-login-error" class="submit-error"></p>
+                <button
+                    id="admin-login-btn"
+                    class="btn btn-primary"
+                >
+                    Verify & Open Dashboard
+                </button>
 
-                    <button type="submit" class="btn btn-primary btn-block mt-3">Verify & Open Dashboard</button>
-                </form>
             </div>
+
         </div>
-        
-        <!-- <div class="footer-info">BNI Lakshya Chapter, Pune East/North Region.</div> -->
+
     </section>
 
     <!-- SUCCESS -->
@@ -242,9 +241,35 @@
                 Your name has been locked to prevent duplicate submissions.
             </p>
             <div id="receipt-body" class="receipt-container"></div>
-            <div class="success-actions mt-3">
-                <button id="btn-print" class="btn btn-outline">🖨 Print Receipt</button>
-                <button id="btn-back-home" class="btn btn-primary">Back to Home</button>
+
+            <!-- Hidden Print Layout -->
+            <div id="print-receipt-area" style="display:none;">
+                
+                <div class="print-header">
+                    <div class="logo-badge">BNI</div>
+
+                    <div class="print-brand">
+                        <h2>LAKSHYA</h2>
+                        <p>REFERRAL CLARITY PORTFOLIO</p>
+                    </div>
+                </div>
+
+                <h1 class="print-title">
+                    Category Confirmation Receipt
+                </h1>
+
+                <div id="print-receipt-content"></div>
+
+                <div class="print-footer">
+                    <p>BNI Lakshya Chapter, Pune East/North Region.</p>
+                    <p>© 2026 BNI Lakshya Chapter. All rights reserved.</p>
+                </div>
+
+            </div>
+            
+            <div class="success-actions">
+                <button id="btn-print" class="btn-print-receipt"> 🖨 Print / Save PDF </button>
+                <button id="btn-back-home" class="btn-home">Return to Home </button>
             </div>
         </div>
     </section>
@@ -280,27 +305,51 @@
 
                     <!-- Row 1: Full Name + Business Name -->
                     <div class="missing-two-col">
-                        <div>
-                            <label class="missing-form-label">Your Full Name</label>
-                            <input
-                                id="req-fullname"
-                                type="text"
-                                class="missing-form-control"
-                                placeholder="First &amp; Last Name"
-                            >
-                            <p id="req-err-name" class="missing-field-error"></p>
-                        </div>
-                        <div>
-                            <label class="missing-form-label">Company / Business Name</label>
-                            <input
-                                id="req-business"
-                                type="text"
-                                class="missing-form-control"
-                                placeholder="Business Name"
-                            >
-                            <p id="req-err-business" class="missing-field-error"></p>
-                        </div>
-                    </div>
+    <div>
+        <label class="missing-form-label">Your Full Name</label>
+        <input
+            id="req-fullname"
+            type="text"
+            class="missing-form-control"
+            placeholder="First & Last Name">
+        <p id="req-err-name" class="missing-field-error"></p>
+    </div>
+
+    <div>
+        <label class="missing-form-label">Company / Business Name</label>
+        <input
+            id="req-business"
+            type="text"
+            class="missing-form-control"
+            placeholder="Business Name">
+        <p id="req-err-business" class="missing-field-error"></p>
+    </div>
+</div>
+
+<!-- NEW ROW -->
+<div class="missing-two-col">
+
+    <div>
+        <label class="missing-form-label">Mobile Number</label>
+        <input
+            id="req-mobile"
+            type="tel"
+            class="missing-form-control"
+            placeholder="9876543210">
+        <p id="req-err-mobile" class="missing-field-error"></p>
+    </div>
+
+    <div>
+        <label class="missing-form-label">Email Address</label>
+        <input
+            id="req-email"
+            type="email"
+            class="missing-form-control"
+            placeholder="name@email.com">
+        <p id="req-err-email" class="missing-field-error"></p>
+    </div>
+
+</div>
 
                     <!-- Row 2: Suggested Category (full width) -->
                     <div class="missing-full-row">
@@ -480,7 +529,7 @@
             <button type="button" id="close-modal-btn" class="modal-close" aria-label="Close">&times;</button>
         </div>
         <hr class="modal-divider">
-        <form id="add-member-form" novalidate>
+        <!-- <form id="add-member-form" novalidate>
             <div class="form-group">
                 <label class="form-label">Full Name <span class="required-star">*</span></label>
                 <input type="text" id="add-member-name" class="form-control" placeholder="Enter full name">
@@ -506,6 +555,44 @@
                 <button type="button" id="cancel-member-btn" class="btn btn-outline">Cancel</button>
                 <button type="submit" id="modal-submit-btn" class="btn btn-primary">Add Member</button>
             </div>
+        </form> -->
+        <form id="add-member-form" class="member-form">
+
+            <div class="form-row two-col">
+
+                <div class="form-group">
+                    <label>Full Name <span>*</span></label>
+                    <input type="text" id="member-name" placeholder="First & Last Name" required>
+                    <p id="modal-err-name" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Company / Business Name <span>*</span></label>
+                    <input type="text" id="member-business" placeholder="Business Name" required>
+                    <p id="modal-err-business" class="field-error"></p>
+                </div>
+            </div>
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="member-mobile" placeholder="10 digit mobile number" >
+                    <p id="modal-err-mobile" class="field-error"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Email ID</label>
+                    <input type="email" id="member-email" placeholder="name@email.com">
+                    <p id="modal-err-email" class="field-error"></p>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="cancel-add-member" class="btn-cancel-modal"> Cancel </button>
+
+                <button type="submit" class="btn-submit-modal"> + Add Chapter Member</button>
+
+            </div>
+
         </form>
     </div>
 </div>

@@ -394,6 +394,7 @@ main {
 
 /* Primary red button */
 .btn-primary {
+    padding:10px;
     background: var(--bni-red);
     color: #ffffff;
 }
@@ -427,6 +428,7 @@ main {
 }
 
 footer {
+    margin-top: auto;
     width: 100%;
     padding: 0 20px;
 }
@@ -1016,13 +1018,23 @@ textarea.form-control {
 
 /* Force white page background for this screen only */
 #screen-admin-login {
-    background: #ffffff;
-    min-height: 100vh;
+    /* display:flex; */
+    /* min-height:calc(100vh - 140px); */
+    justify-content:center;
+    align-items:center;
+    padding:20px;
 }
 
+#screen-admin-login.active{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:calc(100vh - 180px);
+    padding:20px;
+}
 /* Outer column: stack page title above card */
 .admin-login-wrapper {
-    display: flex;
+    /* display: flex; */
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
@@ -1049,13 +1061,12 @@ textarea.form-control {
 
 /* Card — soft shadow, no border, white bg */
 .admin-login-card {
-    max-width: 480px;
-    width: 100%;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
-    padding: 32px 36px;
-    border: none;
+    width:100%;
+    max-width:520px;
+    background:#fff;
+    border-radius:20px;
+    padding:40px;
+    box-shadow:0 10px 40px rgba(0,0,0,.08);
 }
 
 /* Hide the card-header inside the card (title is now above) */
@@ -1065,22 +1076,22 @@ textarea.form-control {
 
 /* Label — not uppercase, dark grey */
 .admin-label {
-    text-transform: none;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #374151;
-    margin-bottom: 8px;
-    display: block;
+    display:block;
+    margin-bottom:10px;
+    font-size:15px;
+    font-weight:600;
+    color:#374151;
 }
 
 /* Input — grey filled background (Image 1 style) */
 .admin-login-card .form-control {
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-size: 0.95rem;
-    width: 100%;
+    width:100%;
+    height:52px;
+    padding:0 16px;
+    background:#f3f4f6;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    margin-bottom:20px;
 }
 .admin-login-card .form-control:focus {
     background: #ffffff;
@@ -1090,15 +1101,14 @@ textarea.form-control {
 
 /* "Verify & Open Dashboard" — full pill shape */
 .admin-login-card .btn-primary {
-    width: 100%;
-    padding: 14px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width:100%;
+    height:52px;
+    border:none;
+    border-radius:999px;
+    background:#CF142B;
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
 }
 
 
@@ -1164,8 +1174,9 @@ textarea.form-control {
 }
 
 .dashboard-actions {
-    display: flex;
-    gap: 12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
 }
 
 /* Outline / ghost button variant */
@@ -1706,4 +1717,437 @@ textarea.missing-form-control {
     .missing-header-subtitle {
         padding-left: 0;
     }
+}
+
+.receipt-section{
+    padding:18px 0;
+    border-bottom:1px dashed #e2e8f0;
+}
+
+.receipt-label{
+    font-size:13px;
+    font-weight:700;
+    color:#718096;
+    text-transform:uppercase;
+    margin-bottom:6px;
+}
+
+.receipt-value{
+    font-size:20px;
+    font-weight:500;
+    color:#111827;
+    line-height:1.6;
+}
+
+.category-highlight{
+    color:#d3112a;
+    font-weight:700;
+}
+
+.success-actions{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:30px;
+}
+
+.btn-print-receipt{
+    padding:14px 30px;
+    border:1px solid #d9d9d9;
+    background:#fff;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-home{
+    padding:14px 30px;
+    background:#d3112a;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+#print-receipt-area{
+    display:none;
+}
+
+@media print{
+
+    body *{
+        visibility:hidden;
+    }
+
+    #print-receipt-area,
+    #print-receipt-area *{
+        visibility:visible;
+    }
+
+    #print-receipt-area{
+        display:block !important;
+        position:absolute;
+        left:0;
+        top:0;
+        width:100%;
+        background:white;
+        padding:50px;
+    }
+
+    .print-header{
+        display:flex;
+        align-items:center;
+        gap:20px;
+        padding-bottom:20px;
+        border-bottom:3px solid #d3112a;
+        margin-bottom:30px;
+    }
+
+    .print-logo{
+        width:70px;
+    }
+
+    .print-title{
+        text-align:center;
+        font-size:34px;
+        margin-bottom:30px;
+    }
+
+    .success-actions{
+        display:none !important;
+    }
+
+    .print-footer{
+        text-align:center;
+        margin-top:50px;
+        border-top:1px solid #ddd;
+        padding-top:20px;
+        font-size:13px;
+    }
+}
+
+.dashboard-actions{
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+#add-member-btn{
+    background:#d3112a;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:12px 22px;
+    font-weight:700;
+    min-width:150px;
+    cursor:pointer;
+}
+
+#add-member-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(211,17,42,.25);
+}
+
+#logout-btn{
+    background:#fff;
+    border:1px solid #d7dce3;
+    color:#374151;
+    border-radius:10px;
+    padding:12px 22px;
+    min-width:120px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+#logout-btn:hover{
+    background:#f8fafc;
+}
+
+
+/* TABLE ACTION BUTTONS ONLY */
+
+.action-buttons{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    align-items:center;
+}
+
+.table-btn{
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+/* EDIT */
+
+.table-btn-edit{
+    background:#eef4ff;
+    color:#2563eb;
+}
+
+.table-btn-edit:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+/* DELETE */
+
+.table-btn-delete{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.table-btn-delete:hover{
+    background:#dc2626;
+    color:#fff;
+}
+
+/* Pending Members Table */
+
+.bold-cell{
+    font-weight:700;
+    color:#0f172a;
+}
+
+.email-cell{
+    color:#475569;
+    font-weight:500;
+}
+
+.status-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 16px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.status-pill.pending{
+    background:#fff7e6;
+    color:#d97706;
+    border:1px solid #fde68a;
+}
+
+#dashboard-table tbody tr{
+    transition:all .25s ease;
+}
+
+#dashboard-table tbody tr:hover{
+    background:#fafafa;
+}
+
+#dashboard-table th{
+    font-size:14px;
+    font-weight:700;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+}
+
+#dashboard-table td{
+    padding:18px 20px;
+}
+
+/* Contact Column */
+
+.contact-cell{
+    line-height:1.8;
+    color:#475569;
+    font-size:14px;
+}
+
+/* Suggested Category */
+
+.suggested-category{
+    color:#dc2626;
+    font-weight:700;
+}
+
+/* Message */
+
+.message-cell{
+    max-width:180px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#475569;
+}
+
+/* Status */
+
+.status-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:95px;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.status-pill.pending{
+    background:#fff7e6;
+    color:#d97706;
+    border:1px solid #fde68a;
+}
+
+/* Actions */
+
+.request-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.action-btn{
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s ease;
+}
+
+.approve-btn{
+    background:#ecfdf3;
+    color:#15803d;
+}
+
+.approve-btn:hover{
+    background:#16a34a;
+    color:#fff;
+}
+
+.reject-btn{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.reject-btn:hover{
+    background:#dc2626;
+    color:#fff;
+}
+
+.member-form{
+    margin-top:20px;
+}
+
+.member-form .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.member-form .form-group{
+    margin-bottom:24px;
+}
+
+.member-form label{
+    display:block;
+    margin-bottom:8px;
+    font-size:15px;
+    font-weight:600;
+    color:#475569;
+}
+
+.member-form label span{
+    color:#dc2626;
+}
+
+.member-form input{
+    width:100%;
+    height:56px;
+    padding:0 18px;
+    border:1px solid #dbe3ef;
+    border-radius:14px;
+    font-size:16px;
+    outline:none;
+    transition:.25s ease;
+}
+
+.member-form input:focus{
+    border-color:#dc2626;
+    box-shadow:0 0 0 4px rgba(220,38,38,.08);
+}
+
+.modal-actions{
+    margin-top:12px;
+    display:flex;
+    justify-content:flex-end;
+    gap:14px;
+}
+
+.btn-cancel-modal{
+    height:52px;
+    padding:0 24px;
+    border:1px solid #dbe3ef;
+    border-radius:14px;
+    background:#fff;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.btn-submit-modal{
+    height:52px;
+    padding:0 28px;
+    border:none;
+    border-radius:14px;
+    background:#dc2626;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    transition:.25s ease;
+}
+
+.btn-submit-modal:hover{
+    background:#b91c1c;
+    transform:translateY(-1px);
+}
+
+.action-buttons{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    justify-content:center;
+}
+
+.btn-action{
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .25s ease;
+}
+
+/* Approve */
+.btn-success{
+    background:#16a34a;
+    color:#fff;
+}
+
+.btn-success:hover{
+    background:#15803d;
+    transform:translateY(-1px);
+}
+
+/* Reject */
+.btn-danger{
+    background:#ef4444;
+    color:#fff;
+}
+
+.btn-danger:hover{
+    background:#dc2626;
+    transform:translateY(-1px);
 }

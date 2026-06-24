@@ -231,21 +231,26 @@ async function submitMissingRequest() {
   await saveRequest({
 
     fullName: document.getElementById('req-fullname').value.trim(),
-
     businessName: document.getElementById('req-business').value.trim(),
-
     mobile: document.getElementById('req-mobile').value.trim(),
-
     email: document.getElementById('req-email').value.trim(),
-
     suggestedCategory: document.getElementById('req-category').value.trim(),
-
     message: document.getElementById('req-message').value.trim()
 
-  });
-
+});
 }
 
+function showAdminDashboard(){
+
+    showScreen('dashboard');
+
+    const adminLoginBtn =
+        document.getElementById('admin-login-btn');
+
+    if(adminLoginBtn){
+        adminLoginBtn.style.display = 'none';
+    }
+}
 /* ==========================================
    DASHBOARD STATS
 ========================================== */
@@ -312,10 +317,15 @@ async function loadConfirmedSubmissions(searchText = '') {
           <td><span class="badge">${escHtml(item.category)}</span></td>
           <td class="mc">${escHtml(item.includes)}</td>
           <td class="mc">${escHtml(item.excludes)}</td>
-          <td style="width:140px;text-align:center;white-space:nowrap;">
-            <button type="button" class="btn-action btn-primary" data-id="${item.id}" data-action="edit-submission"> Edit </button>
-            <button type="button" class="btn-action btn-danger" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission"> Delete</button>
-          </td>
+          <td class="action-buttons">
+            <button type="button" class="table-btn table-btn-edit" data-id="${item.id}" data-action="edit-submission">
+                Edit
+            </button>
+
+            <button type="button" class="table-btn table-btn-delete" data-id="${item.id}" data-member-id="${item.memberId || ''}" data-action="delete-submission">
+                Delete
+            </button>
+        </td>
         </tr>
       `).join('');
 
@@ -368,12 +378,12 @@ async function loadPendingMembers(searchText = '') {
             ${escHtml(member.mobile || '-')}
         </td>
 
-        <td>
+        <td class="email-cell">
             ${escHtml(member.email || '-')}
         </td>
 
         <td>
-            <span class="badge badge-pending">
+            <span class="status-pill pending">
                 PENDING
             </span>
         </td>
@@ -440,11 +450,12 @@ async function loadMissingRequests(searchText = '') {
                     ${escHtml((r.status || 'pending').toLowerCase())}
                 </span>
             </td>
-
             <td class="action-buttons">
-                ${ r.status !== 'approved'
-                    ? `<button type="button" class="btn-action btn-success" data-id="${r.id}" data-action="approve-request"> Approve </button>` : ''
+                ${r.status !== 'approved'? `
+                  <button type="button" class="btn-action btn-success" data-id="${r.id}" data-action="approve-request"> Approve</button>`
+                  : ''
                 }
+
                 <button type="button" class="btn-action btn-danger" data-id="${r.id}" data-action="delete-request"> Reject </button>
             </td>
         </tr>
@@ -572,9 +583,17 @@ async function adminLogin(email, password) {
 
 async function adminLogout() {
 
+  
   await logout();
 
   sessionStorage.removeItem('bni_admin');
+
+  const adminLoginBtn =
+    document.getElementById('admin-login-link');
+
+  if(adminLoginBtn){
+    adminLoginBtn.style.display = 'inline-flex';
+  }
 
   showScreen('landing');
 
@@ -657,9 +676,15 @@ async function openDashboard() {
 
   showScreen('dashboard');
 
+  const adminLoginBtn = document.getElementById('admin-login-link');
+
+  if(adminLoginBtn){
+    adminLoginBtn.style.display = 'block';
+  }
+
   await loadDashboardStats();
 
-  await refreshActiveTab(document.getElementById('dash-search')?.value || '');
+  await refreshActiveTab( document.getElementById('dash-search')?.value || '' );
 
 }
 
@@ -686,24 +711,6 @@ document
   .getElementById('start-btn')
   ?.addEventListener('click', () => showScreen('selection'));
 
-// document
-//   .getElementById('continue-btn')
-//   ?.addEventListener('click', () => {
-
-//     if (!selectedMember) {
-//       const errEl = document.getElementById('selection-error');
-//       if (errEl) errEl.textContent = 'Please select your name first.';
-//       return;
-//     }
-//     if (selectedMember.isSubmitted) return;
-
-//     document.getElementById('form-member-name').value = selectedMember.name;
-//     document.getElementById('form-business-name').value = selectedMember.businessName || '';
-
-//     showScreen('form');
-
-//   });
-
 document
   .getElementById('continue-btn')
   ?.addEventListener('click', () => {
@@ -718,15 +725,9 @@ document
 
     console.log("Selected Member:", selectedMember);
 
-    document.getElementById('form-member-name').value =
-      selectedMember.name || '';
-
-    document.getElementById('form-business-name').value =
-      selectedMember.businessName || '';
-
-    // FIX
-    document.getElementById('form-category').value =
-      selectedMember.profession || '';
+    document.getElementById('form-member-name').value = selectedMember.name || '';
+    document.getElementById('form-business-name').value = selectedMember.businessName || '';
+    document.getElementById('form-category').value = selectedMember.profession || '';
 
     showScreen('form');
 });
@@ -1024,18 +1025,38 @@ document.getElementById('missing-name-form').addEventListener('submit', async (e
 
     clearFormErrors();
 
-    const fullName          = document.getElementById('req-fullname').value.trim();
-    const businessName      = document.getElementById('req-business').value.trim();
-    const mobile            = document.getElementById('req-mobile').value.trim();
-    const email             = document.getElementById('req-email').value.trim();
+    const fullName = document.getElementById('req-fullname').value.trim();
+    const businessName = document.getElementById('req-business').value.trim();
+    const mobile = document.getElementById('req-mobile').value.trim();
+    const email = document.getElementById('req-email').value.trim();
     const suggestedCategory = document.getElementById('req-category').value.trim();
+    const message = document.getElementById('req-message').value.trim();
+
 
     let valid = true;
-    if (!fullName)     { showFieldError('req-err-name', 'Full name is required.'); valid = false; }
-    if (!businessName) { showFieldError('req-err-business', 'Business name is required.'); valid = false; }
-    if (!/^\d{10}$/.test(mobile)) { showFieldError('req-err-mobile', 'Enter a valid 10-digit mobile.'); valid = false; }
-    if (!/\S+@\S+\.\S+/.test(email)) { showFieldError('req-err-email', 'Enter a valid email.'); valid = false; }
-    if (!suggestedCategory) { showFieldError('req-err-category', 'Please suggest a category.'); valid = false; }
+    if (!fullName) {
+    showFieldError('req-err-name', 'Full name is required.');
+    valid = false;
+}
+
+if (!businessName) {
+    showFieldError('req-err-business', 'Business name is required.');
+    valid = false;
+}
+if (!/^\d{10}$/.test(mobile)) {
+    showFieldError('req-err-mobile', 'Enter valid 10 digit mobile number');
+    valid = false;
+}
+
+if (!/\S+@\S+\.\S+/.test(email)) {
+    showFieldError('req-err-email', 'Enter valid email address');
+    valid = false;
+}
+
+if (!suggestedCategory) {
+    showFieldError('req-err-category', 'Please suggest a category.');
+    valid = false;
+}
     if (!valid) return;
 
     const btn = e.target.querySelector('button[type="submit"]');
@@ -1339,70 +1360,217 @@ editForm?.addEventListener('submit', async (e) => {
    RECEIPT RENDERING
 ========================================== */
 
+// function renderReceipt(sub) {
+
+//   const el = document.getElementById('receipt-body');
+//   if (!el) return;
+
+//   el.innerHTML = `
+// <div class="submission-receipt">
+
+//     <div class="receipt-title">
+//         Submission Receipt
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>MEMBER NAME</label>
+//         <div>${escHtml(sub.memberName)}</div>
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>BUSINESS NAME</label>
+//         <div>${escHtml(sub.businessName || '-')}</div>
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>CHAPTER</label>
+//         <div>BNI Lakshya</div>
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>CATEGORY ALLOTTED</label>
+//         <div class="category-text">${escHtml(sub.category)}</div>
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>INCLUDES</label>
+//         <div>${escHtml(sub.includes)}</div>
+//     </div>
+
+//     <div class="receipt-row">
+//         <label>DOES NOT INCLUDE</label>
+//         <div>${escHtml(sub.excludes)}</div>
+//     </div>
+
+//     ${
+//       sub.specificAsk
+//       ? `
+//       <div class="receipt-row">
+//           <label>SPECIFIC ASK / REFERRAL CLARITY</label>
+//           <div>${escHtml(sub.specificAsk)}</div>
+//       </div>
+//       `
+//       : ''
+//     }
+
+//     <div class="receipt-row">
+//         <label>SUBMITTED ON</label>
+//         <div>
+//             ${new Date().toLocaleString('en-IN')}
+//         </div>
+//     </div>
+
+// </div>
+// `;
+
+// }
+
+// function renderReceipt(sub) {
+
+//     const receiptHtml = `
+//         <table class="receipt-table">
+//             <tr>
+//                 <td>MEMBER NAME</td>
+//                 <td>${escHtml(sub.memberName)}</td>
+//             </tr>
+
+//             <tr>
+//                 <td>BUSINESS NAME</td>
+//                 <td>${escHtml(sub.businessName || '-')}</td>
+//             </tr>
+
+//             <tr>
+//                 <td>CHAPTER</td>
+//                 <td>BNI Lakshya</td>
+//             </tr>
+
+//             <tr>
+//                 <td>CATEGORY ALLOTTED</td>
+//                 <td>${escHtml(sub.category)}</td>
+//             </tr>
+
+//             <tr>
+//                 <td>INCLUDES</td>
+//                 <td>${escHtml(sub.includes)}</td>
+//             </tr>
+
+//             <tr>
+//                 <td>DOES NOT INCLUDE</td>
+//                 <td>${escHtml(sub.excludes)}</td>
+//             </tr>
+
+//             ${
+//                 sub.specificAsk
+//                 ? `
+//                 <tr>
+//                     <td>SPECIFIC ASK / REFERRAL CLARITY</td>
+//                     <td>${escHtml(sub.specificAsk)}</td>
+//                 </tr>
+//                 `
+//                 : ''
+//             }
+
+//             <tr>
+//                 <td>SUBMITTED ON</td>
+//                 <td>${new Date().toLocaleString('en-IN')}</td>
+//             </tr>
+//         </table>
+//     `;
+
+//     // Success Screen
+//     const screenReceipt = document.getElementById('receipt-body');
+//     if (screenReceipt) {
+//         screenReceipt.innerHTML = receiptHtml;
+//     }
+
+//     // Print Layout
+//     const printReceipt = document.getElementById('print-receipt-content');
+//     if (printReceipt) {
+//         printReceipt.innerHTML = receiptHtml;
+//     }
+// }
+
 function renderReceipt(sub) {
 
-  const el = document.getElementById('receipt-body');
-  if (!el) return;
+    const receiptHTML = `
 
-  el.innerHTML = `
-<div class="submission-receipt">
+        <div class="receipt-section">
+            <div class="receipt-label">MEMBER NAME</div>
+            <div class="receipt-value">${escHtml(sub.memberName)}</div>
+        </div>
 
-    <div class="receipt-title">
-        Submission Receipt
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">BUSINESS NAME</div>
+            <div class="receipt-value">${escHtml(sub.businessName || '-')}</div>
+        </div>
 
-    <div class="receipt-row">
-        <label>MEMBER NAME</label>
-        <div>${escHtml(sub.memberName)}</div>
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">CHAPTER</div>
+            <div class="receipt-value">BNI Lakshya</div>
+        </div>
 
-    <div class="receipt-row">
-        <label>BUSINESS NAME</label>
-        <div>${escHtml(sub.businessName || '-')}</div>
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">CATEGORY ALLOTTED</div>
+            <div class="receipt-value category-highlight">
+                ${escHtml(sub.category)}
+            </div>
+        </div>
 
-    <div class="receipt-row">
-        <label>CHAPTER</label>
-        <div>BNI Lakshya</div>
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">INCLUDES</div>
+            <div class="receipt-value">${escHtml(sub.includes)}</div>
+        </div>
 
-    <div class="receipt-row">
-        <label>CATEGORY ALLOTTED</label>
-        <div class="category-text">${escHtml(sub.category)}</div>
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">DOES NOT INCLUDE</div>
+            <div class="receipt-value">${escHtml(sub.excludes)}</div>
+        </div>
 
-    <div class="receipt-row">
-        <label>INCLUDES</label>
-        <div>${escHtml(sub.includes)}</div>
-    </div>
+        ${
+            sub.specificAsk
+            ? `
+            <div class="receipt-section">
+                <div class="receipt-label">
+                    SPECIFIC ASK / REFERRAL CLARITY
+                </div>
+                <div class="receipt-value">
+                    ${escHtml(sub.specificAsk)}
+                </div>
+            </div>
+            `
+            : ''
+        }
 
-    <div class="receipt-row">
-        <label>DOES NOT INCLUDE</label>
-        <div>${escHtml(sub.excludes)}</div>
-    </div>
+        <div class="receipt-section">
+            <div class="receipt-label">SUBMITTED ON</div>
+            <div class="receipt-value">
+                ${new Date().toLocaleString('en-IN')}
+            </div>
+        </div>
+    `;
 
-    ${
-      sub.specificAsk
-      ? `
-      <div class="receipt-row">
-          <label>SPECIFIC ASK / REFERRAL CLARITY</label>
-          <div>${escHtml(sub.specificAsk)}</div>
-      </div>
-      `
-      : ''
+    document.getElementById('receipt-body').innerHTML = receiptHTML;
+
+    document.getElementById('print-receipt-content').innerHTML =
+        receiptHTML;
+}
+
+document.getElementById('btn-print')?.addEventListener('click', () => {
+
+    const printArea = document.getElementById('print-receipt-area');
+
+    if (printArea) {
+        printArea.style.display = 'block';
     }
 
-    <div class="receipt-row">
-        <label>SUBMITTED ON</label>
-        <div>
-            ${new Date().toLocaleString('en-IN')}
-        </div>
-    </div>
+    window.print();
 
-</div>
-`;
+    if (printArea) {
+        printArea.style.display = 'none';
+    }
 
-}
+});
+
 
 /* ==========================================
    ADD MEMBER MODAL
@@ -1411,7 +1579,7 @@ function renderReceipt(sub) {
 const addMemberBtn    = document.getElementById('add-member-btn');
 const memberModal      = document.getElementById('member-modal');
 const closeModalBtn    = document.getElementById('close-modal-btn');
-const cancelMemberBtn  = document.getElementById('cancel-member-btn');
+const cancelMemberBtn  = document.getElementById('cancel-add-member');
 const addMemberForm    = document.getElementById('add-member-form');
 
 /* ==========================================
@@ -1425,7 +1593,7 @@ if (addMemberBtn) {
     addMemberForm.reset();
     clearModalErrors();
     memberModal.classList.add('active');
-    document.getElementById('add-member-name')?.focus();
+    document.getElementById('member-name')?.focus();
 
   });
 
@@ -1489,7 +1657,7 @@ function clearModalErrors() {
   document.getElementById('modal-err-business').textContent = '';
   document.getElementById('modal-err-mobile').textContent = '';
   document.getElementById('modal-err-email').textContent = '';
-  document.getElementById('modal-submit-error').textContent = '';
+  // document.getElementById('modal-submit-error').textContent = '';
 
 }
 
@@ -1505,10 +1673,10 @@ if (addMemberForm) {
 
     clearModalErrors();
 
-    const name     = document.getElementById('add-member-name').value.trim();
+    const name = document.getElementById('member-name').value.trim();
     const business = document.getElementById('member-business').value.trim();
-    const mobile   = document.getElementById('member-mobile').value.trim();
-    const email    = document.getElementById('member-email').value.trim();
+    const mobile = document.getElementById('member-mobile').value.trim();
+    const email = document.getElementById('member-email').value.trim();
 
     let valid = true;
 
